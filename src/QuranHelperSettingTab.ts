@@ -17,6 +17,26 @@ export class QuranHelperSettingTab extends PluginSettingTab {
     containerEl.empty();
 
     new Setting(containerEl)
+      .setName("Output language / لغة الإدراج")
+      .setDesc(
+        "Applies to ayahs, surahs, pages and new ayah notes. English: M. Pickthall (Tanzil), bundled for non-commercial study; see TRANSLATION-NOTICE.md. Search works in both languages.",
+      )
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption("arabic", "Arabic only / العربية")
+          .addOption("english", "English only")
+          .addOption("both", "Arabic + English")
+          .setValue(this.plugin.settings.outputLanguage)
+          .onChange((value) => {
+            this.plugin.settings.outputLanguage = value as
+              | "arabic"
+              | "english"
+              | "both";
+            void this.plugin.saveSettings();
+          }),
+      );
+
+    new Setting(containerEl)
       .setName("Output Format")
       .setDesc("Choose how the Ayah should be formatted")
       .addDropdown((dropdown) =>

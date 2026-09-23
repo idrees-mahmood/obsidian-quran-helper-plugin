@@ -6,6 +6,7 @@ import type { QuranHelperSettings, IndexedAyah } from "src/types";
 import { DEFAULT_SETTINGS } from "src/types";
 import { QuranHelperSettingTab } from "src/QuranHelperSettingTab";
 import { withFrontmatter } from "src/utils";
+import { formatAyahs } from "src/formatAyahs";
 
 // 1. Icon for Ayah
 const QURAN_AYAH_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -131,12 +132,7 @@ export default class QuranHelper extends Plugin {
       folderPath ? `${folderPath}/${fileName}` : fileName,
     );
 
-    const { outputFormat, calloutType } = this.settings;
-    const type = calloutType || "quran";
-    let content =
-      outputFormat === "blockquote"
-        ? `> ## ${surahName}\n>\n> ${ayah.text} (${ayah.ayah_id})\n\n`
-        : `> [!${type}] ${surahName}\n> ${ayah.text} (${ayah.ayah_id})\n\n`;
+    let content = formatAyahs([ayah], this.settings);
 
     content = withFrontmatter(content, {
       rawTags: ayahNoteTags,

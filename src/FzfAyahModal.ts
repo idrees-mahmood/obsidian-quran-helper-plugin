@@ -5,6 +5,8 @@ import { QuranSearch } from "./QuranSearch";
 import type { IndexedAyah } from "./types";
 import { INITIAL_AYAHS } from "./initialAyahs";
 import type QuranHelper from "../main";
+import { formatAyahs } from "./formatAyahs";
+import { getTranslation } from "./translation";
 
 export class FzfAyahModal extends SuggestModal<IndexedAyah> {
   private quranSearch: QuranSearch | null = null;
@@ -17,7 +19,9 @@ export class FzfAyahModal extends SuggestModal<IndexedAyah> {
     onChoose?: (ayah: IndexedAyah) => void,
   ) {
     super(app);
-    this.setPlaceholder("Search by text, ayah number, or 2:255 for Surah:Ayah");
+    this.setPlaceholder(
+      "Search Arabic, English, a surah name, or a reference such as 2:255",
+    );
     this.setInstructions([
       { command: "↵", purpose: "insert" },
       { command: "Mod ↵", purpose: "insert inline" },
@@ -52,8 +56,14 @@ export class FzfAyahModal extends SuggestModal<IndexedAyah> {
   renderSuggestion(ayah: IndexedAyah, el: HTMLElement) {
     const textEl = el.createDiv({ text: ayah.text });
     textEl.setAttribute("dir", "rtl");
+    textEl.addClass("quran-helper-arabic");
+    el.createDiv({
+      text: getTranslation(ayah),
+      cls: "quran-helper-english",
+      attr: { lang: "en", dir: "ltr" },
+    });
     el.createEl("small", {
-      text: `${ayah.surah_name} - ${ayah.ayah_id}`,
+      text: `${ayah.surah_name_en} / ${ayah.surah_name} — ${ayah.surah_id}:${ayah.ayah_id} · M. Pickthall`,
     });
   }
 
@@ -83,18 +93,11 @@ export class FzfAyahModal extends SuggestModal<IndexedAyah> {
     }
 
     try {
-      const { outputFormat, calloutType } = this.plugin.settings;
-      let content = "";
-
-      if (evt.ctrlKey || evt.metaKey) {
-        content = `{ ${ayah.text} } – ${ayah.surah_name} ${ayah.ayah_id}`;
-      } else if (outputFormat === "blockquote") {
-        content = `> ${ayah.text}\n> — ${ayah.surah_name} - ${ayah.ayah_id}\n\n`;
-      } else {
-        // Callout format
-        const type = calloutType || "quran";
-        content = `> [!${type}] ${ayah.surah_name} - ${ayah.ayah_id}\n> ${ayah.text}\n\n`;
-      }
+      const content = formatAyahs(
+        [ayah],
+        this.plugin.settings,
+        evt.ctrlKey || evt.metaKey,
+      );
 
       const cursor = editor.getCursor();
       const lines = content.split("\n");

@@ -1,4 +1,5 @@
 import type { IndexedAyah } from "./types";
+import { getTranslation, normalizeEnglish } from "./translation";
 import {
   isNumericQuery,
   isSurahAyahQuery,
@@ -21,9 +22,10 @@ export class QuranSearch {
 
     this.ayahs.forEach((ayah, index) => {
       // Tokenize by splitting on whitespace
-      const tokens = ayah.normalized_text
-        .split(/\s+/)
-        .filter((t) => t.length > 0);
+      const tokens =
+        `${ayah.normalized_text} ${normalizeEnglish(getTranslation(ayah))} ${normalizeEnglish(ayah.surah_name_en)}`
+          .split(/\s+/)
+          .filter((t) => t.length > 0);
 
       tokens.forEach((token) => {
         wordSet.add(token);
@@ -43,7 +45,9 @@ export class QuranSearch {
       return this.ayahs.slice(0, limit);
     }
 
-    const normalizedQuery = normalizeArabic(query.trim());
+    const normalizedQuery = /[a-z]/i.test(query)
+      ? normalizeEnglish(query)
+      : normalizeArabic(query.trim());
 
     // Handle Surah:Ayah query (e.g. "2:255" or "٢:٢٥٥")
     const surahAyahMatch = isSurahAyahQuery(query);

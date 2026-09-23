@@ -46,3 +46,31 @@
   box-shadow: none;
   opacity: 0.6;
 }
+
+
+/* Scope bilingual output without changing old Arabic-only callouts. */
+.callout[data-callout-metadata~="quran-helper"] .callout-content {
+  font-family: var(--font-text);
+  line-height: var(--line-height-normal);
+}
+
+.quran-helper-arabic {
+  font-family: "qpc-hafs", serif;
+  font-weight: normal;
+  line-height: 2;
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+
+.quran-helper-english {
+  font-family: var(--font-text);
+  line-height: 1.6;
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.callout .quran-helper-arabic {
+  display: block;
+  text-align: right;
+  font-size: 1.2em;
+}

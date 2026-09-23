@@ -12,7 +12,7 @@ export class FzfPageModal extends SuggestModal<PageEntry> {
   constructor(app: App, plugin: QuranHelper) {
     super(app);
     this.plugin = plugin;
-    this.setPlaceholder("اكتب رقم الصفحة (1–604)...");
+    this.setPlaceholder("Page number (1–604) / رقم الصفحة");
   }
 
   async onOpen() {

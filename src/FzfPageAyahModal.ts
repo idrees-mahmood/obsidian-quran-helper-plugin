@@ -3,6 +3,8 @@ import { MarkdownView, Notice, SuggestModal } from "obsidian";
 import type { IndexedAyah, PageEntry } from "./types";
 import { normalizeArabic } from "./utils";
 import type QuranHelper from "../main";
+import { formatAyahs } from "./formatAyahs";
+import { getTranslation, normalizeEnglish } from "./translation";
 
 type PageAyahItem =
   | { kind: "all"; ayahs: IndexedAyah[] }
@@ -23,7 +25,9 @@ export class FzfPageAyahModal extends SuggestModal<PageAyahItem> {
       kind: "single" as const,
       ayah,
     }));
-    this.setPlaceholder(`الصفحة ${entry.page} — ابحث في الآيات أو اختر...`);
+    this.setPlaceholder(
+      `Page ${entry.page} / الصفحة — Search Arabic or English…`,
+    );
   }
 
   getSuggestions(query: string): PageAyahItem[] {
@@ -36,6 +40,10 @@ export class FzfPageAyahModal extends SuggestModal<PageAyahItem> {
       const { ayah } = item as { kind: "single"; ayah: IndexedAyah };
       return (
         ayah.normalized_text.includes(normalizedQ) ||
+        (normalizeEnglish(query).length > 0 &&
+          normalizeEnglish(getTranslation(ayah)).includes(
+            normalizeEnglish(query),
+          )) ||
         ayah.ayah_id.toString().includes(query.trim())
       );
     });
@@ -46,18 +54,26 @@ export class FzfPageAyahModal extends SuggestModal<PageAyahItem> {
   renderSuggestion(item: PageAyahItem, el: HTMLElement) {
     if (item.kind === "all") {
       const textEl = el.createDiv({
-        text: `إدراج الصفحة ${this.entry.page} كاملة`,
+        text: `Insert full page ${this.entry.page} / إدراج الصفحة كاملة`,
       });
       textEl.setAttribute("dir", "rtl");
-      el.createEl("small", { text: `${this.entry.ayahs.length} آية` });
+      el.createEl("small", { text: `${this.entry.ayahs.length} ayahs / آية` });
       return;
     }
 
     const { ayah } = item;
-    const textEl = el.createDiv({ text: ayah.text });
+    const textEl = el.createDiv({
+      text: ayah.text,
+      cls: "quran-helper-arabic",
+    });
     textEl.setAttribute("dir", "rtl");
+    el.createDiv({
+      text: getTranslation(ayah),
+      cls: "quran-helper-english",
+      attr: { lang: "en", dir: "ltr" },
+    });
     el.createEl("small", {
-      text: `${ayah.surah_name} - ${ayah.ayah_id}`,
+      text: `${ayah.surah_name_en} / ${ayah.surah_name} — ${ayah.surah_id}:${ayah.ayah_id} · M. Pickthall`,
     });
   }
 
@@ -77,12 +93,7 @@ export class FzfPageAyahModal extends SuggestModal<PageAyahItem> {
       return;
     }
 
-    const { outputFormat, calloutType } = this.plugin.settings;
-    const type = calloutType || "quran";
-    const content =
-      outputFormat === "blockquote"
-        ? `> ${ayah.text}\n> — ${ayah.surah_name} - ${ayah.ayah_id}\n\n`
-        : `> [!${type}] ${ayah.surah_name} - ${ayah.ayah_id}\n> ${ayah.text}\n\n`;
+    const content = formatAyahs([ayah], this.plugin.settings);
 
     this.insertContent(editor, content);
   }
@@ -95,31 +106,12 @@ export class FzfPageAyahModal extends SuggestModal<PageAyahItem> {
       return;
     }
 
-    const { outputFormat, calloutType } = this.plugin.settings;
-    const first = ayahs.at(0);
-    const last = ayahs.at(-1);
-    if (!first || !last) return;
-    const header = `الصفحة ${this.entry.page} — ${first.surah_name} (${first.ayah_id}) إلى ${last.surah_name} (${last.ayah_id})`;
-
-    let content = "";
-
-    if (outputFormat === "blockquote") {
-      content = `> ## ${header}\n>\n`;
-      ayahs.forEach((ayah) => {
-        content += `> ${ayah.ayah_id}. ${ayah.text}\n`;
-      });
-      content += `\n`;
-    } else {
-      const type = calloutType || "quran";
-      content = `> [!${type}] ${header}\n> `;
-      ayahs.forEach((ayah, index) => {
-        if (index > 0 && ayah.surah_id !== ayahs[index - 1]?.surah_id) {
-          content += `\n> \n> `;
-        }
-        content += `${ayah.text} (${ayah.ayah_id}) `;
-      });
-      content += `\n`;
-    }
+    const content = formatAyahs(
+      ayahs,
+      this.plugin.settings,
+      false,
+      `Page ${this.entry.page} / الصفحة`,
+    );
 
     this.insertContent(editor, content);
   }

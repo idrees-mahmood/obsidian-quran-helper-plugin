@@ -64,6 +64,7 @@ export interface IndexedSurah extends SearchableSurah {
 }
 
 export interface QuranHelperSettings {
+  outputLanguage: "arabic" | "english" | "both";
   outputFormat: "blockquote" | "callout" | "inline";
   calloutType: string;
   ayahNoteFolder: string;
@@ -77,6 +78,7 @@ export interface QuranHelperSettings {
 }
 
 export const DEFAULT_SETTINGS: QuranHelperSettings = {
+  outputLanguage: "arabic",
   outputFormat: "callout",
   calloutType: "quran-ayah",
   ayahNoteFolder: "",

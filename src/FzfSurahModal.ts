@@ -5,6 +5,7 @@ import { surahDataService } from "./SurahDataService";
 import { SurahSearch } from "./SurahSearch";
 import type { IndexedSurah } from "./types";
 import type QuranHelper from "../main";
+import { formatAyahs } from "./formatAyahs";
 
 export class FzfSurahModal extends SuggestModal<IndexedSurah> {
   private surahSearch: SurahSearch | null = null;
@@ -84,32 +85,12 @@ export class FzfSurahModal extends SuggestModal<IndexedSurah> {
           throw new Error(`Could not find verses for surah ${surah.id}`);
         }
 
-        const { outputFormat, calloutType } = this.plugin.settings;
-        const contentParts: string[] = [];
-
-        if (evt.ctrlKey || evt.metaKey) {
-          const inlineParts = surahAyahs.map(
-            (ayah) =>
-              `{ ${ayah.text} } – ${surah.transliteration} ${ayah.ayah_id}`,
-          );
-          contentParts.push(inlineParts.join("\n\n") + "\n\n");
-        } else if (outputFormat === "blockquote") {
-          contentParts.push(`> ## ${surah.name} \n>\n`);
-          surahAyahs.forEach((ayah) => {
-            contentParts.push(`> ${ayah.ayah_id}. ${ayah.text}\n`);
-          });
-          contentParts.push(`\n\n`);
-        } else {
-          const type = calloutType || "quran";
-          contentParts.push(`> [!${type}] ${surah.name}\n`);
-          contentParts.push("> ");
-          surahAyahs.forEach((ayah) => {
-            contentParts.push(`${ayah.text} (${ayah.ayah_id}) `);
-          });
-          contentParts.push(`\n\n`);
-        }
-
-        const content = contentParts.join("");
+        const content = formatAyahs(
+          surahAyahs,
+          this.plugin.settings,
+          evt.ctrlKey || evt.metaKey,
+          `${surah.transliteration} / ${surah.name}`,
+        );
 
         const cursor = editor.getCursor();
         const lines = content.split("\n");

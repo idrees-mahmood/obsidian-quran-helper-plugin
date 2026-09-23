@@ -1,3 +1,38 @@
+# Quran Helper — bilingual development fork
+
+Based on [Ammar Alakkad’s Quran Helper](https://github.com/AmmarCodes/obsidian-quran-helper-plugin).
+Original MIT code attribution is retained. This branch adds offline English support;
+it is a development build, not an upstream or community-directory release.
+
+## New in this fork
+
+- Search Arabic text, English translation words (case/punctuation insensitive), English surah names, or references such as `2:255` and `٢:٢٥٥`.
+- Preview Arabic and M. Pickthall’s English translation in the ayah picker.
+- Choose **Arabic only**, **English only**, or **Arabic + English** under **Settings → Quran Helper → Output language**. Arabic-only remains the default for existing installations.
+- The language setting applies to individual ayahs, full surahs, page selections, full pages, and newly created ayah notes, in callout, blockquote and inline formats.
+- English output includes translator attribution; every ayah includes its surah:ayah reference and source link. The output is saved as Markdown with inline language/direction spans, so text remains readable without the plugin.
+- All 6,236 English translations are bundled locally. No API key, account, or runtime network request is needed for lookup or insertion. Clicking a source link opens its website.
+
+The English corpus is the Tanzil `en.pickthall` edition. Its download terms are for non-commercial use: see [TRANSLATION-NOTICE.md](TRANSLATION-NOTICE.md). Those content terms are separate from the MIT code license. Additional translations, slash completion, hadith and tafsir are not included in this first build.
+
+## Try this build
+
+1. Prefer a test vault first. If replacing Quran Helper in an existing vault, back up its plugin folder and settings.
+2. Copy `main.js`, `manifest.json` and `styles.css` into `<vault>/.obsidian/plugins/quran-helper/`, retaining the translation notice alongside the files. The ZIP contains the `quran-helper` folder already.
+3. Reload Obsidian and enable **Quran Helper** in Community plugins.
+4. Set **Output language → Arabic + English**, then use **Quran Helper: Insert Ayah** from the Command Palette.
+5. Search `1:1`, `Lord of the Worlds`, or `Al-Fatihah`, and select a result. `Mod+Enter` inserts inline.
+
+The plugin ID is deliberately unchanged (`quran-helper`), so this replaces the upstream plugin rather than installing alongside it. An upstream community-plugin update can replace this fork. Existing notes are never migrated or rewritten.
+
+## Development and validation
+
+`npm ci`, then `npm run build`, `npm test -- --runInBand`, `npm run lint`, and `npm run prettier:ci`.
+Builds use the checked-in corpus and do not fetch/rewrite Arabic data. The existing `npm run enrich` command remains an explicit maintenance operation requiring network access.
+The bilingual tests cover all output modes, safe markup, corpus completeness, missing records, attribution, reference lookup, and English/Arabic search. Desktop/mobile visual acceptance in Obsidian remains a manual check before a public release.
+
+---
+
 # إضافة Quran Helper
 
 إضافة لـ Obsidian يساعدك على العثور على إدراج آيات القرآن في ملاحظاتك.
