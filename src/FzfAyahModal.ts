@@ -8,7 +8,7 @@ import type QuranHelper from "../main";
 import { formatAyahs } from "./formatAyahs";
 import { TRANSLATIONS, getTranslation } from "./translation";
 
-export class FzfAyahModal extends SuggestModal<IndexedAyah> {
+export class FzfAyahModal extends SuggestModal<IndexedAyah[]> {
   private quranSearch: QuranSearch | null = null;
   private plugin: QuranHelper;
   private onChoose: ((ayah: IndexedAyah) => void) | null = null;
@@ -20,7 +20,9 @@ export class FzfAyahModal extends SuggestModal<IndexedAyah> {
   ) {
     super(app);
     this.setPlaceholder(
-      "Search Arabic, English, a surah name, or a reference such as 2:255",
+      onChoose
+        ? "Search Arabic, English or a reference such as 2:255"
+        : "Search Arabic, English, 2:255 or a range such as 2:255-257",
     );
     this.setInstructions([
       { command: "↵", purpose: "insert" },
@@ -53,12 +55,24 @@ export class FzfAyahModal extends SuggestModal<IndexedAyah> {
     }
   }
 
-  getSuggestions(query: string): IndexedAyah[] {
+  getSuggestions(query: string): IndexedAyah[][] {
     if (!this.quranSearch) return [];
-    return this.quranSearch.search(query);
+    const range = this.quranSearch.getRange(query);
+    if (range !== null) {
+      return !this.onChoose && range.length ? [range] : [];
+    }
+    return this.quranSearch.search(query).map((ayah) => [ayah]);
   }
 
-  renderSuggestion(ayah: IndexedAyah, el: HTMLElement) {
+  renderSuggestion(ayahs: IndexedAyah[], el: HTMLElement) {
+    const ayah = ayahs[0];
+    if (!ayah) return;
+    if (ayahs.length > 1) {
+      const last = ayahs[ayahs.length - 1]!;
+      el.createDiv({
+        text: `Insert ${ayahs.length} ayahs — ${ayah.surah_name_en} ${ayah.surah_id}:${ayah.ayah_id}-${last.ayah_id}`,
+      });
+    }
     const textEl = el.createDiv({ text: ayah.text });
     textEl.setAttribute("dir", "rtl");
     textEl.addClass("quran-helper-arabic");
@@ -72,7 +86,9 @@ export class FzfAyahModal extends SuggestModal<IndexedAyah> {
     });
   }
 
-  onChooseSuggestion(ayah: IndexedAyah, evt: MouseEvent | KeyboardEvent) {
+  onChooseSuggestion(ayahs: IndexedAyah[], evt: MouseEvent | KeyboardEvent) {
+    const ayah = ayahs[0];
+    if (!ayah) return;
     if (this.onChoose) {
       this.onChoose(ayah);
       return;
@@ -99,7 +115,7 @@ export class FzfAyahModal extends SuggestModal<IndexedAyah> {
 
     try {
       const content = formatAyahs(
-        [ayah],
+        ayahs,
         this.plugin.settings,
         evt.ctrlKey || evt.metaKey,
       );

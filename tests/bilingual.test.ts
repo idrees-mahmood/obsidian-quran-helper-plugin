@@ -83,7 +83,11 @@ test("surah/page formatting preserves order, references and a single attribution
     "Page 1",
   );
   expect(output).toContain("Page 1");
-  expect(output.indexOf("#1:1")).toBeLessThan(output.indexOf("#1:2"));
+  expect(output).toContain("[Al-Fatihah 1:1–2]");
+  expect(output.match(/https:\/\/tanzil.net\/#/g)).toHaveLength(1);
+  expect(output.indexOf(getTranslation(verse))).toBeLessThan(
+    output.indexOf(getTranslation(second)),
+  );
   expect(output.match(/Saheeh International/g)).toHaveLength(1);
   expect(output).toContain(getTranslation(second));
 });
@@ -161,4 +165,51 @@ test("missing or invalid saved editions default to Saheeh International", () => 
   }
   expect(resolveTranslation("sahih")).toBe("sahih");
   expect(resolveTranslation("pickthall")).toBe("pickthall");
+});
+
+test("ranges support Arabic digits, validate endpoints and never truncate at the search limit", async () => {
+  const search = await quranDataService.getSearchService();
+  for (const query of ["2:255-257", "٢:٢٥٥-٢٥٧", " 2 : 255 – 257 "]) {
+    expect(search.getRange(query)?.map((a) => a.ayah_id)).toEqual([
+      255, 256, 257,
+    ]);
+  }
+  expect(search.search("2:1-286")).toHaveLength(286);
+  expect(search.getRange("1:7-7")?.map((a) => a.ayah_id)).toEqual([7]);
+  for (const query of [
+    "1:7-8",
+    "2:257-255",
+    "0:1-2",
+    "115:1-2",
+    "1:0-2",
+    "2:1-999999",
+    "2:255-",
+    "2:255-3:2",
+  ]) {
+    expect(search.getRange(query)).toEqual([]);
+    expect(search.search(query)).toEqual([]);
+  }
+  expect(search.getRange("mercy")).toBeNull();
+  expect(search.getRange("2:255")).toBeNull();
+  expect(new QuranSearch([verse]).getRange("1:1-3")).toEqual([]);
+});
+
+test("all output formats use one passage reference, including cross-surah pages", async () => {
+  const records = await quranDataService.getAyahs();
+  const passage = records.filter(
+    (a) =>
+      (a.surah_id === 1 && a.ayah_id === 7) ||
+      (a.surah_id === 2 && a.ayah_id <= 2),
+  );
+  for (const outputFormat of ["callout", "blockquote", "inline"] as const) {
+    const output = formatAyahs(passage, {
+      ...DEFAULT_SETTINGS,
+      outputFormat,
+      outputLanguage: "both",
+    });
+    expect(output).toContain("1:7–2:2");
+    expect(output.match(/https:\/\/tanzil.net\/#/g)).toHaveLength(1);
+    expect(output.match(/Saheeh International/g)).toHaveLength(1);
+    expect(output).not.toContain("English translation:");
+  }
 });

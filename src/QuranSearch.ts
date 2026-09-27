@@ -1,6 +1,7 @@
 import type { IndexedAyah, TranslationId } from "./types";
 import { getTranslation, normalizeEnglish } from "./translation";
 import {
+  convertArabicNumerals,
   isNumericQuery,
   isSurahAyahQuery,
   normalizeArabic,
@@ -43,7 +44,26 @@ export class QuranSearch {
     this.uniqueWords = Array.from(wordSet);
   }
 
+  /** null means ordinary search; [] means an invalid or unavailable range. */
+  public getRange(query: string): IndexedAyah[] | null {
+    const normalized = convertArabicNumerals(query).trim();
+    if (!/^\d+\s*:.*[-–—]/.test(normalized)) return null;
+    const match = /^(\d+)\s*:\s*(\d+)\s*[-–—]\s*(\d+)$/.exec(normalized);
+    if (!match) return [];
+    const surah = Number(match[1]);
+    const start = Number(match[2]);
+    const end = Number(match[3]);
+    if (surah < 1 || surah > 114 || start < 1 || end < start || end > 286)
+      return [];
+    const verses = this.ayahs.filter(
+      (a) => a.surah_id === surah && a.ayah_id >= start && a.ayah_id <= end,
+    );
+    return verses.length === end - start + 1 ? verses : [];
+  }
+
   public search(query: string, limit = 50): IndexedAyah[] {
+    const range = this.getRange(query);
+    if (range !== null) return range;
     if (!query.trim()) {
       return this.ayahs.slice(0, limit);
     }

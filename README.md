@@ -7,10 +7,11 @@ it is a development build, not an upstream or community-directory release.
 ## New in this fork
 
 - Search Arabic text, English translation words (case/punctuation insensitive), English surah names, or references such as `2:255` and `٢:٢٥٥`.
+- Insert a custom range with **Insert Ayah**: type `2:255-257` (or `٢:٢٥٥-٢٥٧`) and select the single range result. Both endpoints are included. Ranges must stay within one surah; invalid or incomplete ranges insert nothing. Single-ayah note/link commands remain single-ayah only.
 - Preview Arabic and your selected English translation in the ayah picker.
 - Choose **Arabic only**, **English only**, or **Arabic + English** under **Settings → Quran Helper → Output language**. Arabic-only remains the default for existing installations.
 - The language setting applies to individual ayahs, full surahs, page selections, full pages, and newly created ayah notes, in callout, blockquote and inline formats.
-- English output includes translator attribution; every ayah includes its surah:ayah reference and source link. The output is saved as Markdown with inline language/direction spans, so text remains readable without the plugin.
+- English output includes translator attribution; one compact passage reference and source link replaces the repeated reference under each ayah. The output is saved as Markdown with inline language/direction spans, so text remains readable without the plugin.
 - All 6,236 verses in each English edition are bundled locally. No API key, account, or runtime network request is needed for lookup or insertion. Clicking a source link opens its website.
 
 Choose **Saheeh International** (default) or **M. Pickthall** under Settings → Quran Helper → English translation. The selection is saved and applies to search, previews and all new insertions. Existing notes keep their original text and attribution. The English corpora are Tanzil’s `en.sahih` and `en.pickthall` editions. Their download terms are for non-commercial use: see [TRANSLATION-NOTICE.md](TRANSLATION-NOTICE.md). Those content terms are separate from the MIT code license. Slash completion, hadith and tafsir are not included in this first build.

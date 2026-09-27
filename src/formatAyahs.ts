@@ -36,21 +36,24 @@ export function formatAyahs(
         `<span class="quran-helper-english" lang="en" dir="ltr">${escapeHtml(translation)}</span>`,
       );
     }
-    parts.push(
-      `[${ayah.surah_name_en || ayah.surah_name} ${reference}](https://tanzil.net/#${reference})`,
-    );
     return format === "inline" ? [parts.join(" — ")] : parts;
   });
-  if (language !== "arabic") {
-    paragraphs.push(
-      `English translation: [${edition.name}](${edition.source}).`,
-    );
-  }
-  if (format === "inline") return paragraphs.join("\n\n");
   const first = ayahs[0]!;
-  const heading =
-    title ||
-    `${first.surah_name_en || first.surah_name} ${first.surah_id}:${first.ayah_id}`;
+  const last = ayahs[ayahs.length - 1]!;
+  const startReference = `${first.surah_id}:${first.ayah_id}`;
+  const reference =
+    ayahs.length === 1
+      ? startReference
+      : `${startReference}–${last.surah_id === first.surah_id ? last.ayah_id : `${last.surah_id}:${last.ayah_id}`}`;
+  const passage = `${first.surah_name_en || first.surah_name} ${reference}`;
+  const source = `[${passage}](https://tanzil.net/#${startReference})`;
+  paragraphs.push(
+    language === "arabic"
+      ? source
+      : `${source} · [${edition.name}](${edition.source})`,
+  );
+  if (format === "inline") return paragraphs.join("\n\n");
+  const heading = title || passage;
   const safeHeading = heading.replace(/[\r\n]/g, " ");
   const type = /^[a-zA-Z0-9-]+$/.test(settings.calloutType)
     ? settings.calloutType
