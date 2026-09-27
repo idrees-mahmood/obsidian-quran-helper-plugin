@@ -63,7 +63,10 @@ export interface IndexedSurah extends SearchableSurah {
   normalized_name: string;
 }
 
+export type TranslationId = "sahih" | "pickthall";
+
 export interface QuranHelperSettings {
+  translation: TranslationId;
   outputLanguage: "arabic" | "english" | "both";
   outputFormat: "blockquote" | "callout" | "inline";
   calloutType: string;
@@ -78,6 +81,7 @@ export interface QuranHelperSettings {
 }
 
 export const DEFAULT_SETTINGS: QuranHelperSettings = {
+  translation: "sahih",
   outputLanguage: "arabic",
   outputFormat: "callout",
   calloutType: "quran-ayah",

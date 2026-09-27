@@ -6,7 +6,7 @@ import type { IndexedAyah } from "./types";
 import { INITIAL_AYAHS } from "./initialAyahs";
 import type QuranHelper from "../main";
 import { formatAyahs } from "./formatAyahs";
-import { getTranslation } from "./translation";
+import { TRANSLATIONS, getTranslation } from "./translation";
 
 export class FzfAyahModal extends SuggestModal<IndexedAyah> {
   private quranSearch: QuranSearch | null = null;
@@ -28,7 +28,10 @@ export class FzfAyahModal extends SuggestModal<IndexedAyah> {
     ]);
     this.plugin = plugin;
     this.onChoose = onChoose || null;
-    this.quranSearch = new QuranSearch(INITIAL_AYAHS);
+    this.quranSearch = new QuranSearch(
+      INITIAL_AYAHS,
+      this.plugin.settings.translation,
+    );
 
     this.scope.register(["Mod"], "Enter", (evt) => {
       this.selectActiveSuggestion(evt);
@@ -39,7 +42,9 @@ export class FzfAyahModal extends SuggestModal<IndexedAyah> {
   async onOpen() {
     void super.onOpen();
     try {
-      this.quranSearch = await quranDataService.getSearchService();
+      this.quranSearch = await quranDataService.getSearchService(
+        this.plugin.settings.translation,
+      );
       // Trigger search update to show full results if input is not empty
       this.inputEl.dispatchEvent(new Event("input"));
     } catch (error) {
@@ -58,12 +63,12 @@ export class FzfAyahModal extends SuggestModal<IndexedAyah> {
     textEl.setAttribute("dir", "rtl");
     textEl.addClass("quran-helper-arabic");
     el.createDiv({
-      text: getTranslation(ayah),
+      text: getTranslation(ayah, this.plugin.settings.translation),
       cls: "quran-helper-english",
       attr: { lang: "en", dir: "ltr" },
     });
     el.createEl("small", {
-      text: `${ayah.surah_name_en} / ${ayah.surah_name} — ${ayah.surah_id}:${ayah.ayah_id} · M. Pickthall`,
+      text: `${ayah.surah_name_en} / ${ayah.surah_name} — ${ayah.surah_id}:${ayah.ayah_id} · ${TRANSLATIONS[this.plugin.settings.translation].name}`,
     });
   }
 

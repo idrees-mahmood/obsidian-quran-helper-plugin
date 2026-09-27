@@ -4,7 +4,11 @@ import { formatAyahs } from "../src/formatAyahs";
 import { QuranSearch } from "../src/QuranSearch";
 import { DEFAULT_SETTINGS } from "../src/types";
 import type { IndexedAyah } from "../src/types";
-import { getTranslation } from "../src/translation";
+import {
+  TRANSLATIONS,
+  resolveTranslation,
+  getTranslation,
+} from "../src/translation";
 import { normalizeArabic } from "../src/utils";
 import { quranDataService } from "../src/QuranDataService";
 
@@ -23,8 +27,10 @@ test("every Arabic verse has exactly one nonempty English translation", () => {
   expect(Object.keys(pickthall).sort()).toEqual(
     ayahs.map((a) => `${a.surah_id}:${a.ayah_id}`).sort(),
   );
-  expect(ayahs.every((a) => getTranslation(a).trim().length > 0)).toBe(true);
-  expect(getTranslation({ surah_id: 114, ayah_id: 6 })).toBe(
+  expect(
+    ayahs.every((a) => getTranslation(a, "pickthall").trim().length > 0),
+  ).toBe(true);
+  expect(getTranslation({ surah_id: 114, ayah_id: 6 }, "pickthall")).toBe(
     "Of the jinn and of mankind.",
   );
 });
@@ -54,7 +60,9 @@ test.each(["callout", "blockquote", "inline"] as const)(
       expect(output.includes(getTranslation(verse))).toBe(
         outputLanguage !== "arabic",
       );
-      expect(output.includes("M. Pickthall")).toBe(outputLanguage !== "arabic");
+      expect(output.includes("Saheeh International")).toBe(
+        outputLanguage !== "arabic",
+      );
       expect(output).toContain("https://tanzil.net/#1:1");
       if (outputLanguage === "both") {
         expect(output).toContain('lang="ar" dir="rtl"');
@@ -76,7 +84,7 @@ test("surah/page formatting preserves order, references and a single attribution
   );
   expect(output).toContain("Page 1");
   expect(output.indexOf("#1:1")).toBeLessThan(output.indexOf("#1:2"));
-  expect(output.match(/M\. Pickthall/g)).toHaveLength(1);
+  expect(output.match(/Saheeh International/g)).toHaveLength(1);
   expect(output).toContain(getTranslation(second));
 });
 
@@ -99,7 +107,7 @@ test("inline override, empty results and unavailable translations are safe", () 
 });
 
 test("English search is case/punctuation insensitive while Arabic and references still work", () => {
-  const search = new QuranSearch([verse]);
+  const search = new QuranSearch([verse], "pickthall");
   for (const query of [
     "BENEFICENT, MERCIFUL",
     "Al-Fatihah",
@@ -111,4 +119,46 @@ test("English search is case/punctuation insensitive while Arabic and references
   }
   expect(search.search("nonexistent word")).toEqual([]);
   expect(search.search("999:999")).toEqual([]);
+});
+
+test("both editions cover the complete Quran and format with their own attribution", () => {
+  for (const translation of ["sahih", "pickthall"] as const) {
+    const edition = TRANSLATIONS[translation];
+    expect(Object.keys(edition.verses).sort()).toEqual(
+      ayahs.map((a) => `${a.surah_id}:${a.ayah_id}`).sort(),
+    );
+    expect(ayahs.every((a) => getTranslation(a, translation).trim())).toBe(
+      true,
+    );
+    for (const outputFormat of ["callout", "blockquote", "inline"] as const) {
+      const output = formatAyahs([verse], {
+        ...DEFAULT_SETTINGS,
+        translation,
+        outputFormat,
+        outputLanguage: "both",
+      });
+      expect(output).toContain(getTranslation(verse, translation));
+      expect(output).toContain(`[${edition.name}](${edition.source})`);
+    }
+  }
+});
+
+test("switching translation selects the correct search index, including switching back", async () => {
+  const sahih = await quranDataService.getSearchService("sahih");
+  const pickthallSearch = await quranDataService.getSearchService("pickthall");
+  const includesFirst = (search: QuranSearch, query: string) =>
+    search.search(query).some((a) => a.surah_id === 1 && a.ayah_id === 1);
+  expect(includesFirst(sahih, "Entirely")).toBe(true);
+  expect(includesFirst(sahih, "Beneficent")).toBe(false);
+  expect(includesFirst(pickthallSearch, "Beneficent")).toBe(true);
+  expect(includesFirst(pickthallSearch, "Entirely")).toBe(false);
+  expect(await quranDataService.getSearchService("sahih")).toBe(sahih);
+});
+
+test("missing or invalid saved editions default to Saheeh International", () => {
+  for (const value of [undefined, null, "unknown", "__proto__", {}]) {
+    expect(resolveTranslation(value)).toBe(DEFAULT_SETTINGS.translation);
+  }
+  expect(resolveTranslation("sahih")).toBe("sahih");
+  expect(resolveTranslation("pickthall")).toBe("pickthall");
 });

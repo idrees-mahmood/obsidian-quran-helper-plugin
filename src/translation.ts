@@ -1,15 +1,32 @@
 import pickthall from "./pickthall.json";
-import type { SearchableAyah } from "./types";
+import sahih from "./sahih.json";
+import type { SearchableAyah, TranslationId } from "./types";
 
-export const TRANSLATION_NAME = "M. Pickthall";
-export const TRANSLATION_SOURCE = "https://tanzil.net/trans/en.pickthall";
+export const TRANSLATIONS = {
+  sahih: {
+    name: "Saheeh International",
+    source: "https://tanzil.net/trans/en.sahih",
+    verses: sahih,
+  },
+  pickthall: {
+    name: "M. Pickthall",
+    source: "https://tanzil.net/trans/en.pickthall",
+    verses: pickthall,
+  },
+};
+
+export function resolveTranslation(value: unknown): TranslationId {
+  return value === "pickthall" ? "pickthall" : "sahih";
+}
 
 export function getTranslation(
   ayah: Pick<SearchableAyah, "surah_id" | "ayah_id">,
+  translation: TranslationId = "sahih",
 ): string {
   return (
-    (pickthall as Record<string, string>)[`${ayah.surah_id}:${ayah.ayah_id}`] ??
-    ""
+    (TRANSLATIONS[translation].verses as Record<string, string>)[
+      `${ayah.surah_id}:${ayah.ayah_id}`
+    ] ?? ""
   );
 }
 

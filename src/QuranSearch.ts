@@ -1,4 +1,4 @@
-import type { IndexedAyah } from "./types";
+import type { IndexedAyah, TranslationId } from "./types";
 import { getTranslation, normalizeEnglish } from "./translation";
 import {
   isNumericQuery,
@@ -12,7 +12,10 @@ export class QuranSearch {
   private uniqueWords: string[] = [];
   private wordToAyahs: Map<string, Set<number>> = new Map();
 
-  constructor(ayahs: IndexedAyah[]) {
+  constructor(
+    ayahs: IndexedAyah[],
+    private translation: TranslationId = "sahih",
+  ) {
     this.ayahs = ayahs;
     this.buildIndex();
   }
@@ -23,7 +26,7 @@ export class QuranSearch {
     this.ayahs.forEach((ayah, index) => {
       // Tokenize by splitting on whitespace
       const tokens =
-        `${ayah.normalized_text} ${normalizeEnglish(getTranslation(ayah))} ${normalizeEnglish(ayah.surah_name_en)}`
+        `${ayah.normalized_text} ${normalizeEnglish(getTranslation(ayah, this.translation))} ${normalizeEnglish(ayah.surah_name_en)}`
           .split(/\s+/)
           .filter((t) => t.length > 0);
 

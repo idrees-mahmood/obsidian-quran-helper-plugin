@@ -4,7 +4,7 @@ import type { IndexedAyah, PageEntry } from "./types";
 import { normalizeArabic } from "./utils";
 import type QuranHelper from "../main";
 import { formatAyahs } from "./formatAyahs";
-import { getTranslation, normalizeEnglish } from "./translation";
+import { TRANSLATIONS, getTranslation, normalizeEnglish } from "./translation";
 
 type PageAyahItem =
   | { kind: "all"; ayahs: IndexedAyah[] }
@@ -41,9 +41,9 @@ export class FzfPageAyahModal extends SuggestModal<PageAyahItem> {
       return (
         ayah.normalized_text.includes(normalizedQ) ||
         (normalizeEnglish(query).length > 0 &&
-          normalizeEnglish(getTranslation(ayah)).includes(
-            normalizeEnglish(query),
-          )) ||
+          normalizeEnglish(
+            getTranslation(ayah, this.plugin.settings.translation),
+          ).includes(normalizeEnglish(query))) ||
         ayah.ayah_id.toString().includes(query.trim())
       );
     });
@@ -68,12 +68,12 @@ export class FzfPageAyahModal extends SuggestModal<PageAyahItem> {
     });
     textEl.setAttribute("dir", "rtl");
     el.createDiv({
-      text: getTranslation(ayah),
+      text: getTranslation(ayah, this.plugin.settings.translation),
       cls: "quran-helper-english",
       attr: { lang: "en", dir: "ltr" },
     });
     el.createEl("small", {
-      text: `${ayah.surah_name_en} / ${ayah.surah_name} — ${ayah.surah_id}:${ayah.ayah_id} · M. Pickthall`,
+      text: `${ayah.surah_name_en} / ${ayah.surah_name} — ${ayah.surah_id}:${ayah.ayah_id} · ${TRANSLATIONS[this.plugin.settings.translation].name}`,
     });
   }
 

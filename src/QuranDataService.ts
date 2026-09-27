@@ -1,4 +1,4 @@
-import type { IndexedAyah } from "./types";
+import type { IndexedAyah, TranslationId } from "./types";
 import { isSearchableAyahArray } from "./types";
 import { normalizeArabic } from "./utils";
 import { QuranSearch } from "./QuranSearch";
@@ -7,7 +7,7 @@ import { surahDataService } from "./SurahDataService";
 class QuranDataService {
   private static instance: QuranDataService;
   private ayahs: IndexedAyah[] | null = null;
-  private searchService: QuranSearch | null = null;
+  private searches = new Map<TranslationId, QuranSearch>();
   private pageMap: Map<number, IndexedAyah[]> | null = null;
 
   private constructor() {}
@@ -19,11 +19,15 @@ class QuranDataService {
     return QuranDataService.instance;
   }
 
-  public async getSearchService(): Promise<QuranSearch> {
-    if (this.searchService) return this.searchService;
+  public async getSearchService(
+    translation: TranslationId = "sahih",
+  ): Promise<QuranSearch> {
+    const cached = this.searches.get(translation);
+    if (cached) return cached;
     const ayahs = await this.getAyahs();
-    this.searchService = new QuranSearch(ayahs);
-    return this.searchService;
+    const search = new QuranSearch(ayahs, translation);
+    this.searches.set(translation, search);
+    return search;
   }
 
   public async getAyahs(): Promise<IndexedAyah[]> {

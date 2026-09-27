@@ -1,5 +1,7 @@
 # English translation data
 
+## Pickthall
+
 Translator: Mohammed Marmaduke William Pickthall.
 Edition ID: en.pickthall. Provider edition last updated: September 4, 2010.
 Downloaded from https://tanzil.net/trans/en.pickthall on September 23, 2026.
@@ -9,14 +11,26 @@ Source SHA-256: `4aabbfa9d96796f5a6b0217d2c39dce1a3084f772bf6f2650e37082a774e3cc
 unchanged, indexed by surah:ayah. Conversion changes the container format only.
 The bundled Arabic corpus is unchanged from upstream Quran Helper.
 
+## Saheeh International
+
+Translator: Saheeh International.
+Edition ID: en.sahih. Provider edition last updated: April 24, 2011.
+Downloaded from https://tanzil.net/trans/en.sahih on September 27, 2026.
+Source SHA-256: `a1778a1a56695d9b59ae910809ec46d9f4a55f05961de51cd56e6ebcf9040883`.
+
+`src/sahih.json` contains all 6,236 translation strings from that file,
+unchanged, indexed by surah:ayah. Conversion changes the container format only.
+
+## Content terms for both editions
+
 The code license does not override content terms. Tanzil's translation download
 terms (https://tanzil.net/trans/) provide these translations for non-commercial
 purposes; other uses require the necessary translator/publisher permission.
 This development build is supplied for non-commercial study. Do not represent
-this data file as MIT-licensed. Before commercial redistribution, replace the
+these data files as MIT-licensed. Before commercial redistribution, replace the
 pack with an independently cleared edition or obtain appropriate permission.
 
-The download's metadata credits Tanzil.net and the translator above. Generated
+The download's metadata credits Tanzil.net and the corresponding translator. Generated
 English quotations retain attribution and a link to the source. The original
 1930 Pickthall work is also described as public domain by Sacred Texts
 (https://sacred-texts.com/isl/pick/index.htm); we nevertheless retain the terms

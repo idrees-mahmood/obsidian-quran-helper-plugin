@@ -1,3 +1,4 @@
+import { resolveTranslation } from "./src/translation";
 import { Notice, normalizePath, Plugin, TFolder, addIcon } from "obsidian";
 import { FzfAyahModal } from "src/FzfAyahModal";
 import { FzfSurahModal } from "src/FzfSurahModal";
@@ -200,6 +201,7 @@ export default class QuranHelper extends Plugin {
       const backup = this.app.loadLocalStorage(QuranHelper.STORAGE_KEY);
       this.settings = Object.assign({}, DEFAULT_SETTINGS, backup ?? {});
     }
+    this.settings.translation = resolveTranslation(this.settings.translation);
   }
 
   async saveSettings() {

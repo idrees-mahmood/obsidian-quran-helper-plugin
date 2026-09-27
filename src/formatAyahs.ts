@@ -1,9 +1,5 @@
 import type { IndexedAyah, QuranHelperSettings } from "./types";
-import {
-  getTranslation,
-  TRANSLATION_NAME,
-  TRANSLATION_SOURCE,
-} from "./translation";
+import { getTranslation, TRANSLATIONS } from "./translation";
 
 function escapeHtml(text: string): string {
   return text
@@ -23,6 +19,7 @@ export function formatAyahs(
   if (ayahs.length === 0) return "";
   const format = inline ? "inline" : settings.outputFormat;
   const language = settings.outputLanguage;
+  const edition = TRANSLATIONS[settings.translation];
   const paragraphs = ayahs.flatMap((ayah) => {
     const reference = `${ayah.surah_id}:${ayah.ayah_id}`;
     const parts: string[] = [];
@@ -32,7 +29,7 @@ export function formatAyahs(
       );
     }
     if (language !== "arabic") {
-      const translation = getTranslation(ayah);
+      const translation = getTranslation(ayah, settings.translation);
       if (!translation)
         throw new Error(`English translation unavailable for ${reference}`);
       parts.push(
@@ -46,7 +43,7 @@ export function formatAyahs(
   });
   if (language !== "arabic") {
     paragraphs.push(
-      `English translation: [${TRANSLATION_NAME}](${TRANSLATION_SOURCE}).`,
+      `English translation: [${edition.name}](${edition.source}).`,
     );
   }
   if (format === "inline") return paragraphs.join("\n\n");

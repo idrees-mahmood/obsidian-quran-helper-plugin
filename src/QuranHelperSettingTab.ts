@@ -1,6 +1,7 @@
 import type { App } from "obsidian";
 import { PluginSettingTab, Setting } from "obsidian";
 import type QuranHelper from "../main";
+import { TRANSLATIONS, resolveTranslation } from "./translation";
 import { FolderSuggest } from "./FolderSuggest";
 
 export class QuranHelperSettingTab extends PluginSettingTab {
@@ -19,7 +20,7 @@ export class QuranHelperSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("Output language / لغة الإدراج")
       .setDesc(
-        "Applies to ayahs, surahs, pages and new ayah notes. English: M. Pickthall (Tanzil), bundled for non-commercial study; see TRANSLATION-NOTICE.md. Search works in both languages.",
+        "Applies to ayahs, surahs, pages and new ayah notes. English editions from Tanzil are bundled for non-commercial study; see TRANSLATION-NOTICE.md. Search works in both languages.",
       )
       .addDropdown((dropdown) =>
         dropdown
@@ -35,6 +36,23 @@ export class QuranHelperSettingTab extends PluginSettingTab {
             void this.plugin.saveSettings();
           }),
       );
+
+    new Setting(containerEl)
+      .setName("English translation")
+      .setDesc(
+        "Used for search, previews and new insertions. Existing notes stay unchanged.",
+      )
+      .addDropdown((dropdown) => {
+        for (const [id, edition] of Object.entries(TRANSLATIONS)) {
+          dropdown.addOption(id, edition.name);
+        }
+        dropdown
+          .setValue(this.plugin.settings.translation)
+          .onChange((value) => {
+            this.plugin.settings.translation = resolveTranslation(value);
+            void this.plugin.saveSettings();
+          });
+      });
 
     new Setting(containerEl)
       .setName("Output Format")
